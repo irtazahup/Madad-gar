@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 // Use the fixed version
 import 'package:get/get.dart';
 import 'package:as_pass/ui/auth/login.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   runApp(MyApp());
 }
 
