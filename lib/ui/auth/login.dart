@@ -1,3 +1,4 @@
+import 'package:as_pass/ui/auth/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:as_pass/controller/login_controller.dart'; // Import your controller
@@ -5,11 +6,16 @@ import 'package:as_pass/controller/login_controller.dart'; // Import your contro
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
 
-  final LoginController controller = Get.put(LoginController());
   final _formKey = GlobalKey<FormState>();
+  // Initialize controller inside build so Get's context is available
+  final LoginController controller = Get.put(LoginController());
 
   @override
   Widget build(BuildContext context) {
+    // Use MediaQuery for reliable screen dimensions
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -22,10 +28,10 @@ class LoginPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Facebook Logo
+                    // Logo
                     Container(
-                      width: Get.width * 0.25,
-                      height: Get.width * 0.25,
+                      width: screenWidth * 0.25,
+                      height: screenWidth * 0.25,
                       decoration: BoxDecoration(
                         color: const Color(0xFF1877F2),
                         borderRadius: BorderRadius.circular(20),
@@ -171,17 +177,18 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
+                          final password = value?.trim() ?? "";
+                          if (password.isEmpty) {
                             return 'Please enter your password';
                           }
-                          if (!controller.isValidPassword(value)) {
-                            return 'Password must be 8+ chars with letters and numbers';
+                          if (!controller.isValidPassword(password)) {
+                            return 'Password must be 8+ characters';
                           }
                           return null;
                         },
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: screenHeight * 0.03),
 
                     // Login Button
                     SizedBox(
@@ -251,7 +258,7 @@ class LoginPage extends StatelessWidget {
                     // Create Account Button
                     OutlinedButton(
                       onPressed: () {
-                        // Handle create account
+                        Get.to(() => SignupPage());
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(

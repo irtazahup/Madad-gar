@@ -11,16 +11,18 @@ class LoginController extends GetxController {
 
   // Validation regex
   final _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-  final _passwordRegex = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$');
+  final _passwordRegex = RegExp(r'^.{8,}$');
 
   bool isValidEmail(String email) => _emailRegex.hasMatch(email);
-  bool isValidPassword(String password) => _passwordRegex.hasMatch(password);
+  bool isValidPassword(String password) =>
+      _passwordRegex.hasMatch(password.trim());
 
   void togglePasswordVisibility() {
     obscurePassword.value = !obscurePassword.value;
   }
 
   void login(GlobalKey<FormState> formKey, BuildContext context) {
+    print("Login called");
     if (formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Form submitted successfully!')),

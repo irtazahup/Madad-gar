@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:as_pass/ui/auth/login.dart'; // Use the fixed version
+// Use the fixed version
 import 'package:get/get.dart';
+import 'package:as_pass/ui/auth/login.dart';
 
 void main() {
   runApp(MyApp());
