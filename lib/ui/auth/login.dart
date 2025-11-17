@@ -194,21 +194,30 @@ class LoginPage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       height: 48,
-                      child: ElevatedButton(
-                        onPressed: () => controller.login(_formKey, context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1877F2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      child: Obx(
+                        () => ElevatedButton(
+                          onPressed: () {
+                            // Validate form before attempting login
+                            if (_formKey.currentState!.validate()) {
+                              controller.Login();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1877F2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 0,
                           ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Log In',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          child: Text(
+                            controller.loginLoading.value
+                                ? 'Loading...'
+                                : 'Log In',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),

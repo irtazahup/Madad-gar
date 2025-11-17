@@ -459,21 +459,39 @@ class SignupPage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       height: 48,
-                      child: ElevatedButton(
-                        onPressed: () => controller.signup(_formKey, context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1877F2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      child: Obx(
+                        () => ElevatedButton(
+                          onPressed: () {
+                            // Validate form and check terms agreement before signup
+                            if (_formKey.currentState!.validate()) {
+                              if (!controller.agreeToTerms.value) {
+                                Get.snackbar(
+                                  'Terms Required',
+                                  'Please agree to Terms and Conditions to continue',
+                                  backgroundColor: Colors.orange,
+                                  colorText: Colors.white,
+                                );
+                                return;
+                              }
+                              controller.SignUp();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1877F2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 0,
                           ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          child: Text(
+                            controller.signupLoading.value
+                                ? 'Loading...'
+                                : 'Sign Up',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
