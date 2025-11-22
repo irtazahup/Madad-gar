@@ -67,7 +67,7 @@ class LoginController extends GetxController {
       // Log or display the error message
       print("Login error: $e");
 
-      Get.snackbar("Maddad'gar", 'Invalid email or password');
+      Get.snackbar("Maddad'gar", 'Apna Net Check kren');
     }
   }
 
