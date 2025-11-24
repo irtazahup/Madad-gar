@@ -15,6 +15,7 @@ class LoginController extends GetxController {
   // Reactive state variables
   var obscurePassword = true.obs;
   late LoginApi login;
+  @override
   void onInit() {
     login = LoginApi(SupabaseService.client);
     // TODO: implement onInit

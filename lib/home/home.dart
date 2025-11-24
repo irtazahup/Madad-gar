@@ -103,7 +103,7 @@ class HomePage extends StatelessWidget {
         actions: [
           SafeArea(
             child: Container(
-              height: Get.height * 0.08,
+              height: 35,
 
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
@@ -128,7 +128,7 @@ class HomePage extends StatelessWidget {
               // Handle notifications
             },
             icon: Icon(
-              size: Get.height * 0.06,
+              size: 35,
               Icons.supervised_user_circle_outlined,
               color: Color.fromARGB(255, 58, 151, 244),
             ),
@@ -140,6 +140,7 @@ class HomePage extends StatelessWidget {
           // Search Bar
           Container(
             color: Colors.white,
+            height: Get.height * 0.1,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: TextField(
               decoration: InputDecoration(
@@ -169,61 +170,105 @@ class HomePage extends StatelessWidget {
           ),
 
           // Categories Section (Optional - you can remove if not needed)
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.only(bottom: 16),
-            child: SizedBox(
-              height: 90,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  return GestureDetector(
-                    onTap: () {
-                      print('Selected: ${category.name}');
-                    },
-                    child: Container(
-                      width: 80,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 55,
-                            height: 55,
-                            decoration: BoxDecoration(
-                              color: category.color.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              category.icon,
-                              color: category.color,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            category.name,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
+          // Categories Section (Responsive Update)
+          Stack(
+            alignment:
+                Alignment.centerRight, // Align children to the right center
+            children: [
+              // 1. The Main Category List (your existing code)
+              Container(
+                height: 110,
+                color: Colors.white,
+                padding: const EdgeInsets.only(bottom: 16),
+                child: SizedBox(
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final screenWidth = MediaQuery.of(context).size.width;
+                      final category = categories[index];
 
+                      // Retaining the original width calculation (e.g., to fit 4 items)
+                      // since the arrow now handles the scroll hint.
+                      const double visibleItems =
+                          4.5; // Adjusted to show 4 items cleanly
+                      final double itemWidth = screenWidth / visibleItems;
+
+                      return GestureDetector(
+                        onTap: () {
+                          print('Selected: ${category.name}');
+                        },
+                        child: Container(
+                          width: itemWidth,
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 55,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: category.color.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  category.icon,
+                                  color: category.color,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                category.name,
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // 2. The Indicator Arrow (Overlay)
+              Positioned(
+                right: 0,
+                // The arrow height will align with the ListView content
+                child: Container(
+                  height: 110, // Match the height of the ListView container
+                  width: 30, // Small width for the fade/arrow area
+                  decoration: BoxDecoration(
+                    // Gradient creates a subtle fade effect over the right edge
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Colors.white.withOpacity(
+                          0.1,
+                        ), // Starts mostly transparent
+                        Colors.white, // Ends as the background color
+                      ],
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 18,
+                    color: Colors.grey, // Faded grey to look like a hint
+                  ),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 4),
 
           // Service Providers List
