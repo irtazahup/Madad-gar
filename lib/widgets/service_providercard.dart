@@ -1,5 +1,8 @@
 import 'package:as_pass/models/service_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:as_pass/widgets/view_details.dart';
+import 'package:get/get_core/get_core.dart';
+import 'package:get/get.dart';
 
 class ServiceProviderCard extends StatelessWidget {
   final ServiceProvider provider;
@@ -163,7 +166,13 @@ class ServiceProviderCard extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () {
                     // Navigate to detail page
-                    print('View Detail: ${provider.name}');
+                    Get.to(
+                      () => ViewDetailsPage(
+                        name: provider.name,
+                        profession: provider.role,
+                        location: provider.address,
+                      ),
+                    );
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),

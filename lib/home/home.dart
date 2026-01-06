@@ -3,6 +3,7 @@ import 'package:as_pass/models/service_provider.dart';
 import 'package:as_pass/widgets/service_providercard.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:as_pass/widgets/add_service.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
@@ -112,11 +113,14 @@ class HomePage extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
-                  child: Text(
-                    "Add Your Skills",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                  child: GestureDetector(
+                    onTap: () => Get.to(() => AddServicePage()),
+                    child: Text(
+                      "Add Your Skills",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -129,7 +133,7 @@ class HomePage extends StatelessWidget {
             },
             icon: Icon(
               size: 35,
-              Icons.supervised_user_circle_outlined,
+              Icons.person,
               color: Color.fromARGB(255, 58, 151, 244),
             ),
           ),
