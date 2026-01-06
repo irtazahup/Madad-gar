@@ -1,4 +1,8 @@
+import 'package:as_pass/controller/service_controller.dart';
+import 'package:as_pass/widgets/map_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 
 class AddServicePage extends StatefulWidget {
   const AddServicePage({super.key});
@@ -13,6 +17,7 @@ class _AddServicePageState extends State<AddServicePage> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _expController = TextEditingController();
   String _selectedCategory = 'Tutoring';
+  bool _isLoading = false;
 
   final List<String> _categories = [
     'Tutoring',
@@ -98,8 +103,9 @@ class _AddServicePageState extends State<AddServicePage> {
               const SizedBox(height: 30),
 
               // Location Status Card (Visual Placeholder)
+              // Replace your existing blue Container with this:
               Container(
-                padding: const EdgeInsets.all(15),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
@@ -107,23 +113,55 @@ class _AddServicePageState extends State<AddServicePage> {
                     color: const Color(0xFF1877F2).withOpacity(0.2),
                   ),
                 ),
-                child: const Row(
+                child: Column(
                   children: [
-                    Icon(Icons.location_on, color: Color(0xFF1877F2)),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        "Location will be set to your current GPS position for neighbors to find you.",
-                      ),
+                    Row(
+                      children: [
+                        const Icon(Icons.home_work, color: Color(0xFF1877F2)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            confirmedLat == null
+                                ? "Where is your service located?"
+                                : "Location Set: ($confirmedLat, $confirmedLng)",
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        // Button to fetch current location (shortcut)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _getCurrentLocation,
+                            icon: const Icon(Icons.my_location, size: 18),
+                            label: const Text("Use Current"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF1877F2),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // Button to pick on a map (The Expert Way)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _pickOnMap,
+
+                            icon: const Icon(Icons.map, size: 18),
+                            label: const Text("Pick on Map"),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
-
-              // Submit Button
+              const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: _submitData,
+                // If loading is true, we disable the button by passing null
+                onPressed: _isLoading ? null : _submitData,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1877F2),
                   minimumSize: const Size(double.infinity, 55),
@@ -131,15 +169,24 @@ class _AddServicePageState extends State<AddServicePage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  "Publish Service",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        "Publish Service",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ), // Submit Button
             ],
           ),
         ),
@@ -160,12 +207,98 @@ class _AddServicePageState extends State<AddServicePage> {
     );
   }
 
-  void _submitData() {
-    if (_formKey.currentState!.validate()) {
-      // Logic to call Controller and save to Supabase
+  // New State variables to hold the confirmed location
+  double? confirmedLat;
+  double? confirmedLng;
+  String locationStatus = "No location selected";
+
+  Future<void> _submitData() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Expert Check: Ensure location is set before publishing
+    if (confirmedLat == null || confirmedLng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please set your Home/Shop location first"),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await ServiceController().uploadService(
+        category: _selectedCategory,
+        description: _descController.text,
+        age: int.parse(_ageController.text),
+        experience: int.parse(_expController.text),
+        lat: confirmedLat!,
+        lng: confirmedLng!,
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Skill listed successfully!")),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Processing...")));
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition();
+      setState(() {
+        confirmedLat = position.latitude;
+        confirmedLng = position.longitude;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Location captured! This will be your fixed service area.",
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Could not get location. Try picking on map."),
+        ),
+      );
+    }
+  }
+
+  // Function to launch the Map Picker
+  Future<void> _pickOnMap() async {
+    // Use current coordinates as a starting point, or default to (0,0)
+    LatLng startPoint = LatLng(confirmedLat ?? 0.0, confirmedLng ?? 0.0);
+
+    final LatLng? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapPickerScreen(initialPosition: startPoint),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        confirmedLat = result.latitude;
+        confirmedLng = result.longitude;
+      });
+      _showSuccessSnackBar("Location selected from map!");
+    }
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
