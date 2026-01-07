@@ -10,6 +10,8 @@ class ViewDetailsPage extends StatelessWidget {
     required this.name,
     required this.profession,
     required this.location,
+    required String description,
+    required int experience,
   });
 
   @override

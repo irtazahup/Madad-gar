@@ -278,7 +278,10 @@ class _AddServicePageState extends State<AddServicePage> {
   // Function to launch the Map Picker
   Future<void> _pickOnMap() async {
     // Use current coordinates as a starting point, or default to (0,0)
-    LatLng startPoint = LatLng(confirmedLat ?? 0.0, confirmedLng ?? 0.0);
+    LatLng startPoint = LatLng(
+      confirmedLat ?? 24.875278,
+      confirmedLng ?? 67.040833,
+    );
 
     final LatLng? result = await Navigator.push(
       context,

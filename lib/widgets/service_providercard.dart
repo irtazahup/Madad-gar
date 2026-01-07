@@ -116,13 +116,13 @@ class ServiceProviderCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.star, size: 16, color: Colors.amber),
                         const SizedBox(width: 4),
-                        Text(
-                          '0  (${provider.reviews} reviews)',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[700],
-                          ),
-                        ),
+                        // Text(
+                        //   '0  (${provider.reviews} reviews)',
+                        //   style: TextStyle(
+                        //     fontSize: 13,
+                        //     color: Colors.grey[700],
+                        //   ),
+                        // ),
                         const Spacer(),
                         // Container(
                         //   width: 10,
@@ -166,11 +166,14 @@ class ServiceProviderCard extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () {
                     // Navigate to detail page
+                    // Inside your ServiceProviderCard...
                     Get.to(
                       () => ViewDetailsPage(
                         name: provider.name,
                         profession: provider.role,
                         location: provider.address,
+                        description: provider.description, // Added this
+                        experience: provider.experience, // Added this
                       ),
                     );
                   },

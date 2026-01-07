@@ -1,3 +1,4 @@
+import 'package:as_pass/controller/home_controller.dart';
 import 'package:as_pass/models/service_category.dart';
 import 'package:as_pass/models/service_provider.dart';
 import 'package:as_pass/widgets/service_providercard.dart';
@@ -9,48 +10,6 @@ class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
   // Sample data - Replace with your database fetch
-  final List<ServiceProvider> providers = [
-    ServiceProvider(
-      name: 'Ahmed Ali',
-      role: 'Electrician',
-      phone: '+92 300 1234567',
-      address: 'VXJV+H9 Shershah Colony, Karachi',
-      reviews: 0,
-      isOnline: true,
-      imageUrl:
-          'https://ui-avatars.com/api/?name=Ahmed+Ali&background=1877F2&color=fff',
-    ),
-    ServiceProvider(
-      name: 'Sarah Khan',
-      role: 'Teacher',
-      phone: '+92 301 9876543',
-      address: 'V272+WMR, Gulam Shah Ln, Rexer L...',
-      reviews: 5,
-      isOnline: true,
-      imageUrl:
-          'https://ui-avatars.com/api/?name=Sarah+Khan&background=1877F2&color=fff',
-    ),
-    ServiceProvider(
-      name: 'Hassan Ahmed',
-      role: 'Plumber',
-      phone: '+92 302 5551234',
-      address: 'VXQP+MWM, Sindh Industrial Trading...',
-      reviews: 12,
-      isOnline: false,
-      imageUrl:
-          'https://ui-avatars.com/api/?name=Hassan+Ahmed&background=1877F2&color=fff',
-    ),
-    ServiceProvider(
-      name: 'Fatima Malik',
-      role: 'Carpenter',
-      phone: '+92 303 7778888',
-      address: 'Block 5, Gulshan-e-Iqbal, Karachi',
-      reviews: 8,
-      isOnline: true,
-      imageUrl:
-          'https://ui-avatars.com/api/?name=Fatima+Malik&background=1877F2&color=fff',
-    ),
-  ];
 
   final List<ServiceCategory> categories = [
     ServiceCategory(
@@ -277,12 +236,42 @@ class HomePage extends StatelessWidget {
 
           // Service Providers List
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: providers.length,
-              itemBuilder: (context, index) {
-                final provider = providers[index];
-                return ServiceProviderCard(provider: provider);
+            child: FutureBuilder<List<ServiceProvider>>(
+              future: HomeController()
+                  .fetchServices(), // Your new fetch function
+              builder: (context, snapshot) {
+                // 1. Handle Loading State
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF1877F2)),
+                  );
+                }
+
+                // 2. Handle Error State
+                if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                }
+
+                // 3. Handle Empty State
+                final providers = snapshot.data ?? [];
+                if (providers.isEmpty) {
+                  return const Center(
+                    child: Text("No neighbors offering services nearby yet."),
+                  );
+                }
+
+                // 4. Handle Data Ready State (Your existing ListView)
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  itemCount: providers.length,
+                  itemBuilder: (context, index) {
+                    final provider = providers[index];
+                    return ServiceProviderCard(provider: provider);
+                  },
+                );
               },
             ),
           ),
