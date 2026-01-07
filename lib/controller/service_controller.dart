@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ServiceController {
   final supabase = Supabase.instance.client;
-
   Future<void> uploadService({
     required String category,
     required String description,
@@ -11,23 +10,21 @@ class ServiceController {
     required int age,
     required double lat,
     required double lng,
+    required String addressName, // The text location
   }) async {
     final user = supabase.auth.currentUser;
     if (user == null) return;
 
-    // 1. Update User Profile (Age and Location)
-    // We use postgis format: 'POINT(longitude latitude)'
-    await supabase
-        .from('users')
-        .update({'age': age, 'location_coords': 'POINT($lng $lat)'})
-        .eq('id', user.id);
+    await supabase.from('users').update({'age': age}).eq('id', user.id);
 
-    // 2. Insert the specific Skill into Services table
+    // We only insert into services now
     await supabase.from('services').insert({
       'user_id': user.id,
       'skill_category': category,
       'description': description,
       'experience_years': experience,
+      'location_name': addressName,
+      'location_coords': 'POINT($lng $lat)', // Standard Long/Lat format
     });
   }
 }

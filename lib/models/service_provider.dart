@@ -22,17 +22,18 @@ class ServiceProvider {
   // Factory to create from Supabase Join query
   // Check this in your model file
   factory ServiceProvider.fromMap(Map<String, dynamic> map) {
-    // Supabase returns the joined table as a nested Map
+    // Access the joined user data
     final userData = map['users'] as Map<String, dynamic>;
 
     return ServiceProvider(
       id: map['id'],
       userId: map['user_id'],
-      role: map['skill_category'],
-      description: map['description'],
-      experience: map['experience_years'],
-      name: userData['full_name'], // Accessing the joined data
-      address: userData['location'] ?? "Area unknown",
+      role: map['skill_category'] ?? '',
+      description: map['description'] ?? '',
+      experience: map['experience_years'] ?? 0,
+      // This now comes from the 'location_name' we just added to the services table
+      address: map['location_name'] ?? "Area unknown",
+      name: userData['full_name'] ?? 'Unknown User',
     );
   }
 }

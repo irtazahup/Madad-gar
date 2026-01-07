@@ -16,6 +16,11 @@ class _AddServicePageState extends State<AddServicePage> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _expController = TextEditingController();
+  bool _isLocationSelected = false; // Controls visibility of the Title field
+  double? _tempLat;
+  double? _tempLng;
+  final TextEditingController _locationTitleController =
+      TextEditingController();
   String _selectedCategory = 'Tutoring';
   bool _isLoading = false;
 
@@ -130,29 +135,69 @@ class _AddServicePageState extends State<AddServicePage> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Row(
+                    Column(
                       children: [
-                        // Button to fetch current location (shortcut)
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _getCurrentLocation,
-                            icon: const Icon(Icons.my_location, size: 18),
-                            label: const Text("Use Current"),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF1877F2),
+                        // Your existing Location Selection Row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _getCurrentLocation,
+                                icon: const Icon(Icons.my_location, size: 18),
+                                label: const Text("Use Current"),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF1877F2),
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _pickOnMap,
+                                icon: const Icon(Icons.map, size: 18),
+                                label: const Text("Pick on Map"),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        // Button to pick on a map (The Expert Way)
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _pickOnMap,
 
-                            icon: const Icon(Icons.map, size: 18),
-                            label: const Text("Pick on Map"),
+                        // NEW: The Title Field (Appears only after selection)
+                        if (_isLocationSelected) ...[
+                          const SizedBox(height: 20),
+                          TweenAnimationBuilder(
+                            duration: const Duration(milliseconds: 400),
+                            tween: Tween<double>(begin: 0, end: 1),
+                            builder: (context, double value, child) {
+                              return Opacity(
+                                opacity: value,
+                                child: TextFormField(
+                                  controller: _locationTitleController,
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        "Name this location (e.g. My Shop / Home)",
+                                    hintText: "Neighbors will see this name",
+                                    prefixIcon: const Icon(
+                                      Icons.edit_location_alt,
+                                      color: Color(0xFF1877F2),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors
+                                        .blue[50], // Light blue to show it's "active"
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFF1877F2),
+                                      ),
+                                    ),
+                                  ),
+                                  validator: (val) => val!.isEmpty
+                                      ? "Please give your location a title"
+                                      : null,
+                                ),
+                              );
+                            },
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ],
@@ -235,6 +280,7 @@ class _AddServicePageState extends State<AddServicePage> {
         experience: int.parse(_expController.text),
         lat: confirmedLat!,
         lng: confirmedLng!,
+        addressName: _locationTitleController.text, // Placeholder
       );
 
       if (mounted) {
@@ -258,6 +304,7 @@ class _AddServicePageState extends State<AddServicePage> {
       setState(() {
         confirmedLat = position.latitude;
         confirmedLng = position.longitude;
+        _isLocationSelected = true; // Show the Title field
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -294,6 +341,7 @@ class _AddServicePageState extends State<AddServicePage> {
       setState(() {
         confirmedLat = result.latitude;
         confirmedLng = result.longitude;
+        _isLocationSelected = true; // Show the Title field
       });
       _showSuccessSnackBar("Location selected from map!");
     }
