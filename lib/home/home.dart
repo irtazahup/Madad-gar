@@ -3,14 +3,19 @@ import 'package:as_pass/models/service_category.dart';
 import 'package:as_pass/models/service_provider.dart';
 import 'package:as_pass/widgets/service_providercard.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:as_pass/widgets/add_service.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
 
-  // Sample data - Replace with your database fetch
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
+class _HomePageState extends State<HomePage> {
+  // Sample data - Replace with your database fetch
   final List<ServiceCategory> categories = [
     ServiceCategory(
       name: 'Education',
@@ -39,6 +44,8 @@ class HomePage extends StatelessWidget {
     ),
   ];
 
+  double _currentSearchRadius = 1000.0;
+  // Starts at 5km
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,8 +244,7 @@ class HomePage extends StatelessWidget {
           // Service Providers List
           Expanded(
             child: FutureBuilder<List<ServiceProvider>>(
-              future: HomeController()
-                  .fetchServices(), // Your new fetch function
+              future: _getHyperlocalServices(), // Use the new helper method
               builder: (context, snapshot) {
                 // 1. Handle Loading State
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -249,18 +255,117 @@ class HomePage extends StatelessWidget {
 
                 // 2. Handle Error State
                 if (snapshot.hasError) {
-                  return Center(child: Text("Error: ${snapshot.error}"));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.location_off,
+                          size: 40,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "${snapshot.error}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            // This re-triggers the build and the permission request
+                            (context as Element).markNeedsBuild();
+                            // Or better: call Geolocator.openAppSettings();
+                          },
+                          child: const Text("Grant Permission"),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 // 3. Handle Empty State
                 final providers = snapshot.data ?? [];
                 if (providers.isEmpty) {
-                  return const Center(
-                    child: Text("No neighbors offering services nearby yet."),
+                  // Calculate what the next step would be
+                  final int currentKm = (_currentSearchRadius / 1000).toInt();
+                  final int nextKm = currentKm + 5;
+                  final bool canExpand = nextKm <= 50; // Cap at 50km
+
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(30.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.location_searching,
+                            size: 80,
+                            color: Colors.grey[300],
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            "No neighbors within ${currentKm}km",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            canExpand
+                                ? "Try expanding your search to find providers in nearby neighborhoods."
+                                : "We couldn't find anyone within 50km. Try checking back later or inviting neighbors!",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 25),
+
+                          if (canExpand)
+                            SizedBox(
+                              width: 220,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _currentSearchRadius +=
+                                        5000.0; // Increment by 5km
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.add_location_alt,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  "Search up to ${nextKm}km",
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1877F2),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            // Reset button if they want to go back to 5km
+                            TextButton.icon(
+                              onPressed: () =>
+                                  setState(() => _currentSearchRadius = 5000.0),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text("Reset to 5km"),
+                            ),
+                        ],
+                      ),
+                    ),
                   );
                 }
 
-                // 4. Handle Data Ready State (Your existing ListView)
+                // 4. Handle Data Ready State
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -288,6 +393,42 @@ class HomePage extends StatelessWidget {
       //     style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
       //   ),
       // ),
+    );
+  }
+
+  // 1. Define a helper method to handle the location-based fetch
+  Future<List<ServiceProvider>> _getHyperlocalServices() async {
+    LocationPermission permission;
+
+    // 1. Check if the user has already given permission
+    permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      // 2. This is what triggers the "Allow Maddad'gar to access location?" popup
+      permission = await Geolocator.requestPermission();
+
+      if (permission == LocationPermission.denied) {
+        // User tapped "Deny" again
+        return Future.error(
+          'Location permissions are denied. We need them to find nearby workers.',
+        );
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // User tapped "Don't ask again"
+      return Future.error(
+        'Location permissions are permanently denied. Please enable them in App Settings.',
+      );
+    }
+
+    // 3. If we reach here, we have permission!
+    Position position = await Geolocator.getCurrentPosition();
+
+    return HomeController().fetchServices(
+      userLat: position.latitude,
+      userLng: position.longitude,
+      radiusInMeters: _currentSearchRadius,
     );
   }
 }

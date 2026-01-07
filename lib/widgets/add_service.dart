@@ -17,8 +17,8 @@ class _AddServicePageState extends State<AddServicePage> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _expController = TextEditingController();
   bool _isLocationSelected = false; // Controls visibility of the Title field
-  double? _tempLat;
-  double? _tempLng;
+  // double? _tempLat;
+  // double? _tempLng;
   final TextEditingController _locationTitleController =
       TextEditingController();
   String _selectedCategory = 'Tutoring';

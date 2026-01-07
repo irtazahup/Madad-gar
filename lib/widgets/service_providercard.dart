@@ -167,15 +167,7 @@ class ServiceProviderCard extends StatelessWidget {
                   onPressed: () {
                     // Navigate to detail page
                     // Inside your ServiceProviderCard...
-                    Get.to(
-                      () => ViewDetailsPage(
-                        name: provider.name,
-                        profession: provider.role,
-                        location: provider.address,
-                        description: provider.description, // Added this
-                        experience: provider.experience, // Added this
-                      ),
-                    );
+                    Get.to(() => ViewDetailsPage(provider: provider));
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),

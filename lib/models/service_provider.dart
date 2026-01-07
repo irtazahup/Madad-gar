@@ -7,6 +7,7 @@ class ServiceProvider {
   final String description; // from services.description
   final int experience; // from services.experience_years
   final String imageUrl; // placeholder for now
+  final double? distance; // in kilometers
 
   ServiceProvider({
     required this.id,
@@ -17,23 +18,28 @@ class ServiceProvider {
     required this.description,
     required this.experience,
     this.imageUrl = "https://ui-avatars.com/api/?background=random",
+    required this.distance,
   });
 
   // Factory to create from Supabase Join query
   // Check this in your model file
   factory ServiceProvider.fromMap(Map<String, dynamic> map) {
-    // Access the joined user data
-    final userData = map['users'] as Map<String, dynamic>;
+    // If coming from RPC, the name is flat. If coming from Select, it's nested.
+    // This 'Senior' approach prevents the app from crashing during the transition.
+    final String displayName =
+        map['provider_name'] ??
+        (map['users'] != null ? map['users']['full_name'] : 'Neighbor');
 
     return ServiceProvider(
-      id: map['id'],
-      userId: map['user_id'],
+      id: map['id'] ?? map['service_id'], // RPC returns service_id
+      userId: map['user_id'] ?? '',
       role: map['skill_category'] ?? '',
       description: map['description'] ?? '',
       experience: map['experience_years'] ?? 0,
-      // This now comes from the 'location_name' we just added to the services table
-      address: map['location_name'] ?? "Area unknown",
-      name: userData['full_name'] ?? 'Unknown User',
+      address: map['location_name'] ?? 'Local Area',
+      name: displayName,
+      // Add a distance field to your model to use map['distance_km']
+      distance: map['distance_km']?.toDouble(),
     );
   }
 }
