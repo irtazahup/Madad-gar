@@ -371,8 +371,50 @@ class _HomePageState extends State<HomePage> {
                     horizontal: 16,
                     vertical: 8,
                   ),
-                  itemCount: providers.length,
+                  // Add 1 to the length to accommodate the "Expand" button at the bottom
+                  itemCount: providers.length + 1,
                   itemBuilder: (context, index) {
+                    // If it's the last item, show the Expand Button
+                    if (index == providers.length) {
+                      final int currentKm = (_currentSearchRadius / 1000)
+                          .toInt();
+                      final int nextKm = currentKm + 5;
+
+                      if (currentKm >= 50)
+                        return const SizedBox(height: 100); // Cap at 50km
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Column(
+                          children: [
+                            const Text(
+                              "Not finding what you need?",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _currentSearchRadius += 5000.0;
+                                });
+                              },
+                              icon: const Icon(Icons.add_location_alt),
+                              label: Text("Show neighbors up to ${nextKm}km"),
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF1877F2),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 80,
+                            ), // Space for the bottom nav
+                          ],
+                        ),
+                      );
+                    }
+
+                    // Otherwise, show the normal provider card
                     final provider = providers[index];
                     return ServiceProviderCard(provider: provider);
                   },
