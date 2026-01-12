@@ -1,6 +1,7 @@
 import 'package:as_pass/controller/home_controller.dart';
 import 'package:as_pass/models/service_category.dart';
 import 'package:as_pass/models/service_provider.dart';
+import 'package:as_pass/ui/profile_page.dart';
 import 'package:as_pass/widgets/service_providercard.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -16,7 +17,38 @@ class HomePage extends StatelessWidget {
     controller.getHyperlocalServices(isRefresh: true);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Maddad'gar")),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: false, // Professional left-aligned look
+        title: const Text(
+          "Maddad'gar",
+          style: TextStyle(
+            color: Color(0xFF1877F2), // Primary Brand Color
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+        actions: [
+          // Add Service Button
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, color: Colors.black87),
+            tooltip: 'Add Service',
+            onPressed: () => Get.to(() => const AddServicePage()),
+          ),
+          // Profile Button
+          IconButton(
+            icon: const Icon(
+              Icons.account_circle_outlined,
+              color: Colors.black87,
+            ),
+            tooltip: 'My Profile',
+            onPressed: () => Get.to(() => ProfilePage()),
+          ),
+          const SizedBox(width: 8), // Padding at the end
+        ],
+      ),
       body: Obx(() {
         if (controller.isLoading.value && controller.services.isEmpty) {
           return const Center(child: CircularProgressIndicator());
