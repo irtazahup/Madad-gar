@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeController extends GetxController {
   final _supabase = Supabase.instance.client;
-
+  // var limitRadius = false.obs;
   // Reactive variables
   var services = <ServiceProvider>[].obs;
   var isLoading = false.obs;
@@ -71,6 +71,16 @@ class HomeController extends GetxController {
       Get.snackbar("Error", e.toString());
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // Inside HomeController
+  void handleSearchAction() {
+    if (currentRadius.value >= 50000) {
+      Get.snackbar("Maddad'gar", "Max radius reached. Resetting to 1KM.");
+      getHyperlocalServices(isRefresh: true); // This restarts to 0-1km
+    } else {
+      getHyperlocalServices(isRefresh: false); // This adds next 5km
     }
   }
 }
