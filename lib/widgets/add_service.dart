@@ -1,4 +1,5 @@
 import 'package:as_pass/controller/service_controller.dart';
+import 'package:as_pass/utils/category_drop_down.dart';
 import 'package:as_pass/widgets/map_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -63,7 +64,7 @@ class _AddServicePageState extends State<AddServicePage> {
               // Category Dropdown
               DropdownButtonFormField(
                 value: _selectedCategory,
-                decoration: _inputDecoration("Category", Icons.category),
+                decoration: customInputDecoration("Category", Icons.category),
                 items: _categories
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
@@ -79,7 +80,10 @@ class _AddServicePageState extends State<AddServicePage> {
                     child: TextFormField(
                       controller: _ageController,
                       keyboardType: TextInputType.number,
-                      decoration: _inputDecoration("Your Age", Icons.person),
+                      decoration: customInputDecoration(
+                        "Your Age",
+                        Icons.person,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 15),
@@ -87,7 +91,10 @@ class _AddServicePageState extends State<AddServicePage> {
                     child: TextFormField(
                       controller: _expController,
                       keyboardType: TextInputType.number,
-                      decoration: _inputDecoration("Years Exp.", Icons.work),
+                      decoration: customInputDecoration(
+                        "Years Exp.",
+                        Icons.work,
+                      ),
                     ),
                   ),
                 ],
@@ -98,7 +105,7 @@ class _AddServicePageState extends State<AddServicePage> {
               TextFormField(
                 controller: _descController,
                 maxLines: 4,
-                decoration: _inputDecoration(
+                decoration: customInputDecoration(
                   "Describe your service...",
                   Icons.description,
                 ),
@@ -235,19 +242,6 @@ class _AddServicePageState extends State<AddServicePage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String hint, IconData icon) {
-    return InputDecoration(
-      prefixIcon: Icon(icon, color: const Color(0xFF1877F2)),
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.grey[100],
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
       ),
     );
   }
