@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (controller.services.isEmpty) {
-          return _if_Noservice();
+          return SingleChildScrollView(child: _if_Noservice());
         }
         return ListView.builder(
           itemCount: controller.services.length + 1,
