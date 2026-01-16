@@ -1,6 +1,8 @@
+import 'package:as_pass/controller/chat_controller.dart';
 import 'package:as_pass/controller/home_controller.dart';
 import 'package:as_pass/models/service_category.dart';
 import 'package:as_pass/models/service_provider.dart';
+import 'package:as_pass/ui/inbox.dart';
 import 'package:as_pass/ui/profile_page.dart';
 import 'package:as_pass/widgets/service_providercard.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +12,7 @@ import 'package:as_pass/widgets/add_service.dart';
 
 class HomePage extends StatelessWidget {
   final controller = Get.put(HomeController());
-
+  final chatController = Get.put(ChatController(), permanent: true);
   @override
   Widget build(BuildContext context) {
     // Call once on load
@@ -46,7 +48,11 @@ class HomePage extends StatelessWidget {
             tooltip: 'My Profile',
             onPressed: () => Get.to(() => ProfilePage()),
           ),
-          const SizedBox(width: 8), // Padding at the end
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: () => Get.to(() => InboxScreen()),
+            icon: Icon(Icons.chat_bubble_outline, color: Colors.black87),
+          ), // Padding at the end
         ],
       ),
       body: Obx(() {

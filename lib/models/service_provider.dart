@@ -24,21 +24,19 @@ class ServiceProvider {
   // Factory to create from Supabase Join query
   // Check this in your model file
   factory ServiceProvider.fromMap(Map<String, dynamic> map) {
-    // If coming from RPC, the name is flat. If coming from Select, it's nested.
-    // This 'Senior' approach prevents the app from crashing during the transition.
     final String displayName =
         map['provider_name'] ??
         (map['users'] != null ? map['users']['full_name'] : 'Neighbor');
 
     return ServiceProvider(
-      id: map['id'] ?? map['service_id'], // RPC returns service_id
-      userId: map['user_id'] ?? '',
+      id: map['id'] ?? map['service_id'],
+      // Look for user_id (from .select) or provider_id (from RPC)
+      userId: map['user_id'] ?? map['provider_id'] ?? '',
       role: map['skill_category'] ?? '',
       description: map['description'] ?? '',
       experience: map['experience_years'] ?? 0,
       address: map['location_name'] ?? 'Local Area',
       name: displayName,
-      // Add a distance field to your model to use map['distance_km']
       distance: map['distance_km']?.toDouble(),
     );
   }

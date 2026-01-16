@@ -1,14 +1,18 @@
+import 'package:as_pass/controller/chat_controller.dart';
 import 'package:as_pass/models/service_provider.dart';
+import 'package:as_pass/ui/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:as_pass/widgets/view_details.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get.dart';
 
 class ServiceProviderCard extends StatelessWidget {
+  final chatController = Get.put(
+    ChatController(),
+  ); // Use put instead of find to be safe
   final ServiceProvider provider;
 
-  const ServiceProviderCard({Key? key, required this.provider})
-    : super(key: key);
+  ServiceProviderCard({Key? key, required this.provider}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -194,10 +198,31 @@ class ServiceProviderCard extends StatelessWidget {
               // Hire Now Button
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Hire functionality
-                    print('Hire: ${provider.name}');
+                  onPressed: () async {
+                    print("Hire Now clicked...");
+                    print(
+                      "Preparing to chat with provider ID: ${provider.userId}",
+                    );
+                    String roomId = await chatController.getOrCreateRoom(
+                      provider.id, // The ID from the service record
+                      provider.userId, // The owner of the service
+                    );
+
+                    if (roomId.isNotEmpty) {
+                      // 2. Navigate to Chat Screen with the ID
+                      Get.to(
+                        () => ChatMessagesScreen(
+                          roomId: roomId,
+                          receiverName:
+                              provider.name, // Pass name for the AppBar
+                        ),
+                      );
+                    } else {
+                      print("Failed to create or get chat room.");
+                    }
                   },
+
+                  // Hire functionality
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 35, 141, 240),
                     padding: const EdgeInsets.symmetric(vertical: 14),
