@@ -32,33 +32,39 @@ class InboxScreen extends StatelessWidget {
               final room = rooms[index];
               final String myId = chatController.supabase.auth.currentUser!.id;
 
-              // Determine the display name: show the one that IS NOT me
-              String otherPersonName = room['consumer_id'] == myId
+              bool amIConsumer = room['consumer_id'] == myId;
+
+              // Determine Title and Subtitle strings
+              String displayName = amIConsumer
                   ? (room['provider_name'] ?? "Provider")
-                  : (room['consumer_name'] ?? "User");
-              // print(room['consumer_id']);
-              // print(room['provider_id']);
-              // print(room['created_at']);
-              // print(room['room_id']);
-              // print(room['consumer_name']);
-              // print(room['provider_name']);
+                  : (room['consumer_name'] ?? "Client");
+
+              String displayRole = amIConsumer
+                  ? (room['provider_role'] ?? "Service Provider")
+                  : "Consumer / Client";
 
               return ListTile(
                 leading: CircleAvatar(
                   backgroundColor: Colors.blueAccent,
                   child: Text(
-                    otherPersonName[0].toUpperCase(),
+                    displayName[0].toUpperCase(),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
-                title: Text(otherPersonName),
+                // Displaying Name and Role together
+                title: Text(
+                  displayName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Text(
-                  "Created: ${room['created_at'].toString().substring(0, 10)}",
-                ), // Clean date
+                  displayRole,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                ),
+                trailing: const Icon(Icons.chevron_right),
                 onTap: () => Get.to(
                   () => ChatMessagesScreen(
                     roomId: room['room_id'],
-                    receiverName: otherPersonName,
+                    receiverName: displayName,
                   ),
                 ),
               );
