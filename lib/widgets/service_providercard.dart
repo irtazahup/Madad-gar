@@ -200,25 +200,23 @@ class ServiceProviderCard extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () async {
                     print("Hire Now clicked...");
-                    print(
-                      "Preparing to chat with provider ID: ${provider.userId}",
+
+                    print("Getting or creating chat room...");
+                    String roomId = await chatController.getOrCreateRoom(
+                      provider.id,
+                      provider.userId,
                     );
-                    () async {
-                      String roomId = await chatController.getOrCreateRoom(
-                        provider.id,
-                        provider.userId,
+                    if (roomId.isNotEmpty) {
+                      print("Navigating to chat room ID: $roomId");
+                      Get.to(
+                        () => ChatMessagesScreen(
+                          roomId: roomId,
+                          receiverName: provider.name,
+                          serviceId: provider.id, // Pass it here
+                          providerId: provider.userId, // Pass it here
+                        ),
                       );
-                      if (roomId.isNotEmpty) {
-                        Get.to(
-                          () => ChatMessagesScreen(
-                            roomId: roomId,
-                            receiverName: provider.name,
-                            serviceId: provider.id, // Pass it here
-                            providerId: provider.userId, // Pass it here
-                          ),
-                        );
-                      }
-                    };
+                    }
                   },
 
                   // Hire functionality
