@@ -65,6 +65,9 @@ class InboxScreen extends StatelessWidget {
                   () => ChatMessagesScreen(
                     roomId: room['room_id'],
                     receiverName: displayName,
+                    serviceId:
+                        room['service_id'], // Now available from your view
+                    providerId: room['provider_id'],
                   ),
                 ),
               );

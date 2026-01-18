@@ -7,11 +7,15 @@ class ChatMessagesScreen extends StatelessWidget {
   final String receiverName;
   final TextEditingController _messageController = TextEditingController();
   final ChatController chatController = Get.find<ChatController>();
+  final String serviceId; // You need to set this appropriately
+  final String providerId; // You need to set this appropriately
 
   ChatMessagesScreen({
     super.key,
     required this.roomId,
     required this.receiverName,
+    required this.serviceId,
+    required this.providerId,
   });
 
   @override
@@ -22,6 +26,23 @@ class ChatMessagesScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
+        actions: [
+          FutureBuilder<bool>(
+            future: Get.find<ChatController>().checkIfReviewed(serviceId),
+            builder: (context, snapshot) {
+              // If already reviewed or loading, don't show the star
+              if (snapshot.data == true || !snapshot.hasData) {
+                print("User has already reviewed or data not ready.");
+                return const SizedBox.shrink();
+              }
+
+              return IconButton(
+                icon: const Icon(Icons.star_rate, color: Colors.amber),
+                onPressed: () => showReviewDialog(serviceId, providerId),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -123,6 +144,87 @@ class ChatMessagesScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void showReviewDialog(String serviceId, String providerId) {
+    int selectedRating = 5;
+    final commentController = TextEditingController();
+
+    Get.dialog(
+      AlertDialog(
+        title: const Text("Rate Service"),
+        // Use SingleChildScrollView to prevent keyboard/text overflow
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Wrap in FittedBox to stop 8-pixel overflow on smaller screens
+              FittedBox(
+                child: StatefulBuilder(
+                  builder: (context, setState) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return IconButton(
+                          // Reduced padding to prevent horizontal overflow
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            index < selectedRating
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: Colors.amber,
+                            size: 32, // Fixed size for consistency
+                          ),
+                          onPressed: () =>
+                              setState(() => selectedRating = index + 1),
+                        );
+                      }),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: commentController,
+                maxLines: 3, // Better for "Experience" comments
+                decoration: const InputDecoration(
+                  hintText: "Share your experience...",
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(8),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                Navigator.of(Get.overlayContext!).pop(), // Direct context pop
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Show a loading indicator so user doesn't click twice
+              Get.showOverlay(
+                asyncFunction: () => chatController.submitReview(
+                  serviceId,
+                  providerId,
+                  selectedRating,
+                  commentController.text,
+                ),
+                loadingWidget: const Center(child: CircularProgressIndicator()),
+              );
+
+              // Close the dialog after submission
+              Navigator.of(Get.overlayContext!).pop();
+            },
+            child: const Text("Submit"),
+          ),
+        ],
+      ),
+      barrierDismissible: false, // Prevents accidental closing during sync
     );
   }
 }

@@ -203,23 +203,22 @@ class ServiceProviderCard extends StatelessWidget {
                     print(
                       "Preparing to chat with provider ID: ${provider.userId}",
                     );
-                    String roomId = await chatController.getOrCreateRoom(
-                      provider.id, // The ID from the service record
-                      provider.userId, // The owner of the service
-                    );
-
-                    if (roomId.isNotEmpty) {
-                      // 2. Navigate to Chat Screen with the ID
-                      Get.to(
-                        () => ChatMessagesScreen(
-                          roomId: roomId,
-                          receiverName:
-                              provider.name, // Pass name for the AppBar
-                        ),
+                    () async {
+                      String roomId = await chatController.getOrCreateRoom(
+                        provider.id,
+                        provider.userId,
                       );
-                    } else {
-                      print("Failed to create or get chat room.");
-                    }
+                      if (roomId.isNotEmpty) {
+                        Get.to(
+                          () => ChatMessagesScreen(
+                            roomId: roomId,
+                            receiverName: provider.name,
+                            serviceId: provider.id, // Pass it here
+                            providerId: provider.userId, // Pass it here
+                          ),
+                        );
+                      }
+                    };
                   },
 
                   // Hire functionality

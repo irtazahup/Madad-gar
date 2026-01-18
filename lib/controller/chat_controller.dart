@@ -89,4 +89,38 @@ class ChatController extends GetxController {
               .toList(),
         );
   }
+
+  Future<void> submitReview(
+    String serviceId,
+    String providerId,
+    int rating,
+    String comment,
+  ) async {
+    try {
+      final myId = supabase.auth.currentUser!.id;
+      await supabase.from('reviews').insert({
+        'service_id': serviceId,
+        'consumer_id': myId,
+        'provider_id': providerId,
+        'rating': rating,
+        'comment': comment,
+      });
+      Get.snackbar("Success", "Thank you for your review!");
+    } catch (e) {
+      Get.snackbar("Error", "Could not submit review: $e");
+    }
+  }
+
+  Future<bool> checkIfReviewed(String serviceId) async {
+    final myId = supabase.auth.currentUser!.id;
+
+    final response = await supabase
+        .from('reviews')
+        .select()
+        .eq('consumer_id', myId)
+        .eq('service_id', serviceId)
+        .maybeSingle();
+
+    return response != null; // Returns true if a review already exists
+  }
 }
