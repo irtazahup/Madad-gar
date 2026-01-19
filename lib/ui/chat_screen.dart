@@ -28,18 +28,28 @@ class ChatMessagesScreen extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 1,
         actions: [
-          Obx(
-            () => IconButton(
-              // Change icon if already reviewed to indicate "Edit" mode
-              icon: Icon(
-                chatController.hasReviewed.value
-                    ? Icons.edit_note
-                    : Icons.star_rate,
-                color: Colors.amber,
+          Obx(() {
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextButton.icon(
+                onPressed: () => showReviewDialog(serviceId, providerId),
+                icon: Icon(
+                  chatController.hasReviewed.value
+                      ? Icons.edit_note
+                      : Icons.star_rate,
+                  color: Colors.amber,
+                  size: 20,
+                ),
+                label: Text(
+                  chatController.hasReviewed.value ? "Edit" : "Rate",
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              onPressed: () => showReviewDialog(serviceId, providerId),
-            ),
-          ),
+            );
+          }),
         ],
       ),
       body: Column(
