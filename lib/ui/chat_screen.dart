@@ -20,6 +20,7 @@ class ChatMessagesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    chatController.checkInitialReviewStatus(serviceId);
     return Scaffold(
       appBar: AppBar(
         title: Text(receiverName),
@@ -27,20 +28,17 @@ class ChatMessagesScreen extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 1,
         actions: [
-          FutureBuilder<bool>(
-            future: Get.find<ChatController>().checkIfReviewed(serviceId),
-            builder: (context, snapshot) {
-              // If already reviewed or loading, don't show the star
-              if (snapshot.data == true || !snapshot.hasData) {
-                print("User has already reviewed or data not ready.");
-                return const SizedBox.shrink();
-              }
-
-              return IconButton(
-                icon: const Icon(Icons.star_rate, color: Colors.amber),
-                onPressed: () => showReviewDialog(serviceId, providerId),
-              );
-            },
+          Obx(
+            () => IconButton(
+              // Change icon if already reviewed to indicate "Edit" mode
+              icon: Icon(
+                chatController.hasReviewed.value
+                    ? Icons.edit_note
+                    : Icons.star_rate,
+                color: Colors.amber,
+              ),
+              onPressed: () => showReviewDialog(serviceId, providerId),
+            ),
           ),
         ],
       ),
@@ -216,7 +214,7 @@ class ChatMessagesScreen extends StatelessWidget {
                 ),
                 loadingWidget: const Center(child: CircularProgressIndicator()),
               );
-
+              // Update the local state
               // Close the dialog after submission
               Navigator.of(Get.overlayContext!).pop();
             },

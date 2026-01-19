@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class ChatController extends GetxController {
   final _supabase = Supabase.instance.client;
   SupabaseClient get supabase => _supabase;
+  var hasReviewed = false.obs;
   // Inside ChatController
   Future<String> getOrCreateRoom(String serviceId, String providerId) async {
     final myId = _supabase.auth.currentUser!.id;
@@ -97,30 +98,34 @@ class ChatController extends GetxController {
     String comment,
   ) async {
     try {
-      final myId = supabase.auth.currentUser!.id;
-      await supabase.from('reviews').insert({
+      final myId = _supabase.auth.currentUser!.id;
+
+      // .upsert() will check the unique constraint (consumer_id + service_id)
+      // If it exists, it updates. If not, it inserts.
+      await _supabase.from('reviews').upsert({
         'service_id': serviceId,
         'consumer_id': myId,
         'provider_id': providerId,
         'rating': rating,
-        'comment': comment,
-      });
-      Get.snackbar("Success", "Thank you for your review!");
+        'comment': comment.trim(),
+      }, onConflict: 'consumer_id,service_id');
+
+      hasReviewed.value = true; // Instant UI update!
+      Get.snackbar("Success", "Review updated successfully!");
     } catch (e) {
-      Get.snackbar("Error", "Could not submit review: $e");
+      Get.snackbar("Error", "Could not save review");
     }
   }
 
-  Future<bool> checkIfReviewed(String serviceId) async {
-    final myId = supabase.auth.currentUser!.id;
-
-    final response = await supabase
+  Future<void> checkInitialReviewStatus(String serviceId) async {
+    final myId = _supabase.auth.currentUser!.id;
+    final res = await _supabase
         .from('reviews')
         .select()
         .eq('consumer_id', myId)
         .eq('service_id', serviceId)
         .maybeSingle();
 
-    return response != null; // Returns true if a review already exists
+    hasReviewed.value = (res != null);
   }
 }
