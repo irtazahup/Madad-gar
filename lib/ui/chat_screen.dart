@@ -32,7 +32,8 @@ class ChatMessagesScreen extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: TextButton.icon(
-                onPressed: () => showReviewDialog(serviceId, providerId),
+                onPressed: () =>
+                    showReviewDialog(context, serviceId, providerId),
                 icon: Icon(
                   chatController.hasReviewed.value
                       ? Icons.edit_note
@@ -155,84 +156,90 @@ class ChatMessagesScreen extends StatelessWidget {
     );
   }
 
-  void showReviewDialog(String serviceId, String providerId) {
-    int selectedRating = 5;
-    final commentController = TextEditingController();
+  // Update the signature to accept context
+  void showReviewDialog(
+    BuildContext context,
+    String serviceId,
+    String providerId,
+  ) {
+    final existingData = chatController.existingReviews[serviceId];
+    int selectedRating = existingData?['rating'] ?? 5;
+    final commentController = TextEditingController(
+      text: existingData?['comment'] ?? "",
+    );
 
-    Get.dialog(
-      AlertDialog(
-        title: const Text("Rate Service"),
-        // Use SingleChildScrollView to prevent keyboard/text overflow
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Wrap in FittedBox to stop 8-pixel overflow on smaller screens
-              FittedBox(
-                child: StatefulBuilder(
-                  builder: (context, setState) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (index) {
-                        return IconButton(
-                          // Reduced padding to prevent horizontal overflow
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: Icon(
-                            index < selectedRating
-                                ? Icons.star
-                                : Icons.star_border,
-                            color: Colors.amber,
-                            size: 32, // Fixed size for consistency
-                          ),
-                          onPressed: () =>
-                              setState(() => selectedRating = index + 1),
-                        );
-                      }),
-                    );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        // Use a separate context for the dialog
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(
+                existingData != null ? "Edit Your Review" : "Rate Service",
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FittedBox(
+                      child: Row(
+                        children: List.generate(5, (index) {
+                          return IconButton(
+                            icon: Icon(
+                              index < selectedRating
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              color: Colors.amber,
+                            ),
+                            onPressed: () => setDialogState(
+                              () => selectedRating = index + 1,
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                    TextField(
+                      controller: commentController,
+                      decoration: const InputDecoration(
+                        hintText: "Your experience...",
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  // Native way to close the dialog
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      await chatController.submitReview(
+                        serviceId,
+                        providerId,
+                        selectedRating,
+                        commentController.text,
+                      );
+
+                      // Native way to close the dialog after success
+                      if (context.mounted) {
+                        Navigator.of(dialogContext).pop();
+                      }
+                    } catch (e) {
+                      print("Error: $e");
+                    }
                   },
+                  child: const Text("Submit"),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: commentController,
-                maxLines: 3, // Better for "Experience" comments
-                decoration: const InputDecoration(
-                  hintText: "Share your experience...",
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(8),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.of(Get.overlayContext!).pop(), // Direct context pop
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              // Show a loading indicator so user doesn't click twice
-              Get.showOverlay(
-                asyncFunction: () => chatController.submitReview(
-                  serviceId,
-                  providerId,
-                  selectedRating,
-                  commentController.text,
-                ),
-                loadingWidget: const Center(child: CircularProgressIndicator()),
-              );
-              // Update the local state
-              // Close the dialog after submission
-              Navigator.of(Get.overlayContext!).pop();
-            },
-            child: const Text("Submit"),
-          ),
-        ],
-      ),
-      barrierDismissible: false, // Prevents accidental closing during sync
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

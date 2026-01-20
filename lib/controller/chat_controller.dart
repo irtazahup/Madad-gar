@@ -5,6 +5,7 @@ class ChatController extends GetxController {
   final _supabase = Supabase.instance.client;
   SupabaseClient get supabase => _supabase;
   var hasReviewed = false.obs;
+  var existingReviews = <String, Map<String, dynamic>>{}.obs;
   // Inside ChatController
   Future<String> getOrCreateRoom(String serviceId, String providerId) async {
     final myId = _supabase.auth.currentUser!.id;
@@ -111,9 +112,14 @@ class ChatController extends GetxController {
       }, onConflict: 'consumer_id,service_id');
 
       hasReviewed.value = true; // Instant UI update!
+      existingReviews[serviceId] = {
+        'rating': rating,
+        'comment': comment.trim(),
+      };
       Get.snackbar("Success", "Review updated successfully!");
     } catch (e) {
       Get.snackbar("Error", "Could not save review");
+      rethrow;
     }
   }
 
@@ -125,6 +131,12 @@ class ChatController extends GetxController {
         .eq('consumer_id', myId)
         .eq('service_id', serviceId)
         .maybeSingle();
+
+    if (res != null) {
+      existingReviews[serviceId] = res;
+    } else {
+      existingReviews.remove(serviceId);
+    }
 
     hasReviewed.value = (res != null);
   }
