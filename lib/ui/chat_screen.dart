@@ -218,6 +218,10 @@ class ChatMessagesScreen extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () async {
                     try {
+                      // Determine if this is an edit or new review for the message text
+                      bool isEditing = chatController.existingReviews
+                          .containsKey(serviceId);
+
                       await chatController.submitReview(
                         serviceId,
                         providerId,
@@ -225,11 +229,26 @@ class ChatMessagesScreen extends StatelessWidget {
                         commentController.text,
                       );
 
-                      // Native way to close the dialog after success
                       if (context.mounted) {
+                        // 1. Close the dialog first
                         Navigator.of(dialogContext).pop();
+
+                        // 2. Show the success message on the chat screen
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isEditing
+                                  ? "Your review was edited successfully!"
+                                  : "Thanks for your review!",
+                            ),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
                       }
                     } catch (e) {
+                      // Error handling is managed by the controller's snackbar
                       print("Error: $e");
                     }
                   },
