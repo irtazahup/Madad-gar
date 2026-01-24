@@ -1,3 +1,4 @@
+import 'package:as_pass/ui/auth/login.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,9 +18,17 @@ class SupabaseService extends GetxService {
         anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
       );
       print('✅ Supabase initialized successfully');
+      Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+        final AuthChangeEvent event = data.event;
+        if (event == AuthChangeEvent.signedOut) {
+          Get.offAll(() => LoginPage()); // Redirect to login on logout
+        }
+      });
     } catch (e) {
       print('❌ Supabase initialization failed: $e');
       rethrow;
     }
   }
+
+  // ignore: empty_constructor_bodies
 }

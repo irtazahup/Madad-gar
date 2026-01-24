@@ -1,6 +1,7 @@
 import 'package:as_pass/api/login_api.dart';
 import 'package:as_pass/home/home.dart';
 import 'package:as_pass/services/supabase_service.dart';
+import 'package:as_pass/ui/auth/login.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -70,6 +71,11 @@ class LoginController extends GetxController {
 
       Get.snackbar("Maddad'gar", 'Apna Net Check kren');
     }
+  }
+
+  void logout() async {
+    await SupabaseService.client.auth.signOut(); // This clears the local token
+    Get.offAll(() => LoginPage());
   }
 
   @override

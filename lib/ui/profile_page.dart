@@ -1,3 +1,4 @@
+import 'package:as_pass/controller/login_controller.dart';
 import 'package:as_pass/controller/profile_controller.dart';
 import 'package:as_pass/widgets/add_service.dart';
 import 'package:as_pass/widgets/edit_services.dart';
@@ -6,11 +7,21 @@ import 'package:get/get.dart';
 
 class ProfilePage extends StatelessWidget {
   final controller = Get.put(ProfileController());
-
+  final LoginController loginController = Get.find<LoginController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("My Profile")),
+      appBar: AppBar(
+        title: const Text("My Profile"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              loginController.logout();
+            },
+          ),
+        ],
+      ),
       // floatingActionButton: FloatingActionButton.extended(
       //   onPressed: () => Get.to(() => const AddServicePage()),
       //   label: const Text("Add New Skill"),
