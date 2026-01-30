@@ -14,6 +14,7 @@ class HomeController extends GetxController {
   /// Main function to handle permissions and fetch data
   Future<void> getHyperlocalServices({bool isRefresh = true}) async {
     try {
+      print("Fetching hyperlocal services...");
       isLoading.value = true;
 
       // 1. Handle Permissions
@@ -46,7 +47,7 @@ class HomeController extends GetxController {
 
       // 4. Call Supabase
       final List<dynamic> response = await _supabase.rpc(
-        'get_nearby_services_v2', // The optimized function with min_radius
+        'get_nearby_services_v4', // The optimized function with min_radius
         params: {
           'user_lat': position.latitude,
           'user_long': position.longitude,
@@ -54,6 +55,9 @@ class HomeController extends GetxController {
           'max_radius_meters': maxRadius,
         },
       );
+      // print(
+      //   "Received ${response.length} services from ${minRadius}m to ${maxRadius}m",
+      // );
 
       final List<ServiceProvider> newResults = response
           .map((json) => ServiceProvider.fromMap(json))

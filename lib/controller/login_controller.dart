@@ -78,6 +78,39 @@ class LoginController extends GetxController {
     Get.offAll(() => LoginPage());
   }
 
+  void showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text(
+            "Are you sure you want to log out of Maddad'gar?",
+          ),
+          actions: [
+            // Cancel button: Just closes the dialog
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            ),
+            // Logout button: Closes dialog and triggers logout
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close dialog first
+                logout(); // Call your existing logout function
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text(
+                "Logout",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void onClose() {
     emailController.dispose();

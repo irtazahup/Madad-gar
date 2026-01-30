@@ -15,7 +15,11 @@ void main() async {
   Get.put(LoginController());
   // Check if a session exists
   final session = SupabaseService.client.auth.currentSession;
-
+  print(
+    session != null
+        ? '✅ Existing session found: ${session!.user.email}'
+        : 'ℹ️ No existing session found, redirecting to login.',
+  );
   runApp(MyApp(initialScreen: session != null ? HomePage() : LoginPage()));
 }
 

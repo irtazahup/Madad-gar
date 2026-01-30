@@ -91,11 +91,14 @@ class ViewDetailsPage extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildStatColumn("Rating", "4.8 ⭐"),
+                          _buildStatColumn(
+                            "Rating",
+                            "${provider.rating?.toStringAsFixed(1) ?? '...'} ⭐",
+                          ),
                           // Using the dynamic distance from RPC
                           _buildStatColumn(
                             "Distance",
-                            "${provider.distance?.toStringAsFixed(1) ?? '...'} km",
+                            "${provider.distance?.toStringAsFixed(1) ?? 'z...'} km",
                           ),
                           _buildStatColumn("Exp", "${provider.experience} yrs"),
                         ],

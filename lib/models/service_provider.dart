@@ -8,6 +8,8 @@ class ServiceProvider {
   final int experience; // from services.experience_years
   final String imageUrl; // placeholder for now
   final double? distance; // in kilometers
+  final double rating;
+  final int totalReviews;
 
   ServiceProvider({
     required this.id,
@@ -19,6 +21,8 @@ class ServiceProvider {
     required this.experience,
     this.imageUrl = "https://ui-avatars.com/api/?background=random",
     required this.distance,
+    required this.rating,
+    required this.totalReviews,
   });
 
   // Factory to create from Supabase Join query
@@ -30,7 +34,6 @@ class ServiceProvider {
 
     return ServiceProvider(
       id: map['id'] ?? map['service_id'],
-      // Look for user_id (from .select) or provider_id (from RPC)
       userId: map['user_id'] ?? map['provider_id'] ?? '',
       role: map['skill_category'] ?? '',
       description: map['description'] ?? '',
@@ -38,6 +41,9 @@ class ServiceProvider {
       address: map['location_name'] ?? 'Local Area',
       name: displayName,
       distance: map['distance_km']?.toDouble(),
+      // Read the new rating data
+      rating: (map['avg_rating'] ?? 0.0).toDouble(),
+      totalReviews: map['total_reviews'] ?? 0,
     );
   }
 }

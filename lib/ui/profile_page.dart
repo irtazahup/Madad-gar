@@ -17,7 +17,7 @@ class ProfilePage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              loginController.logout();
+              loginController.showLogoutConfirmation(context);
             },
           ),
         ],

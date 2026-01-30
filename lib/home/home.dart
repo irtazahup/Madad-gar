@@ -13,6 +13,7 @@ import 'package:as_pass/widgets/add_service.dart';
 class HomePage extends StatelessWidget {
   final controller = Get.put(HomeController());
   final chatController = Get.put(ChatController(), permanent: true);
+
   @override
   Widget build(BuildContext context) {
     // Call once on load
